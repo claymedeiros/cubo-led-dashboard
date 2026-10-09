@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>CUBO LED — Dashboard Executivo · v4.0</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --navy:#0B2545; --navy2:#163A6B; --navy3:#1E4F8A;
+  --gold:#C8A664; --gold2:#9C7E3D;
+  --green:#1B5E20; --green2:#43A047;
+  --red:#B23A48;
+  --bg:#F7F4ED; --card:#FFFFFF; --text:#16223A; --muted:#6E7891;
+  --line:#E5E1D6;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{font-family:-apple-system,'Inter','Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1480px;margin:0 auto;padding:36px 28px}
+
+/* HERO ELEGANTE */
+.hero{background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 60%,var(--navy3) 100%);color:#fff;border-radius:20px;padding:46px 44px;margin-bottom:32px;box-shadow:0 24px 50px -22px rgba(11,37,69,.42);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;right:-100px;top:-100px;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(200,166,100,.22) 0%,transparent 70%)}
+.hero::after{content:'';position:absolute;left:-50px;bottom:-50px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(200,166,100,.10) 0%,transparent 70%)}
+.hero-content{position:relative;z-index:2}
+.hero .brand{display:flex;align-items:center;gap:14px;margin-bottom:20px}
+.hero .brand .logo{width:54px;height:54px;border-radius:12px;background:var(--gold);color:var(--navy);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:24px;letter-spacing:-1px}
+.hero .brand .name{font-size:13px;color:var(--gold);letter-spacing:3px;text-transform:uppercase;font-weight:700}
+.hero .brand .name b{color:#fff;font-size:18px;font-weight:800;display:block;letter-spacing:2px;margin-top:2px}
+.hero h1{font-size:42px;font-weight:800;letter-spacing:-0.5px;margin-bottom:10px;line-height:1.15}
+.hero .sub{color:#C8DDFF;font-size:16px;margin-bottom:24px;max-width:880px;line-height:1.5}
+.hero .meta{display:flex;gap:36px;flex-wrap:wrap;border-top:1px solid rgba(255,255,255,.12);padding-top:22px}
+.hero .meta div{display:flex;flex-direction:column;gap:4px}
+.hero .meta span{color:#A8C4F0;font-size:11px;text-transform:uppercase;letter-spacing:1.8px;font-weight:600}
+.hero .meta b{font-size:16px;color:#fff;font-weight:700}
+
+/* SECTION HEADER */
+section{margin-bottom:40px}
+.sec-head{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+.sec-head .num{width:42px;height:42px;border-radius:12px;background:var(--navy);color:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;flex-shrink:0}
+.sec-head h2{font-size:24px;font-weight:800;color:var(--navy);letter-spacing:-0.3px}
+.sec-head p{font-size:13px;color:var(--muted);margin-top:2px}
+
+/* KPI CARDS — DESTAQUE EXECUTIVO */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:18px}
+@media (max-width:1100px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:#fff;border-radius:16px;padding:24px;border:1px solid var(--line);box-shadow:0 2px 10px -4px rgba(11,37,69,.06);transition:transform .2s ease}
+.kpi:hover{transform:translateY(-2px);box-shadow:0 8px 24px -8px rgba(11,37,69,.16)}
+.kpi .tag{font-size:10px;font-weight:800;letter-spacing:2.2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.kpi .num{font-size:32px;font-weight:800;color:var(--navy);line-height:1.05;margin-bottom:6px;letter-spacing:-0.5px}
+.kpi .desc{font-size:12px;color:var(--muted);line-height:1.4}
+.kpi.green{background:linear-gradient(135deg,#E8F5E9 0%,#fff 60%);border-color:#A5D6A7}
+.kpi.green .num{color:var(--green)}
+.kpi.gold{background:linear-gradient(135deg,#FFF8E1 0%,#fff 60%);border-color:#FFD54F}
+.kpi.gold .num{color:var(--gold2)}
+.kpi.navy{background:linear-gradient(135deg,#E3F2FD 0%,#fff 60%);border-color:#90CAF9}
+
+/* CARDS */
+.card{background:var(--card);border-radius:16px;padding:28px;border:1px solid var(--line);box-shadow:0 2px 10px -4px rgba(11,37,69,.06)}
+.card h3{font-size:13px;letter-spacing:1.8px;text-transform:uppercase;color:var(--navy);margin-bottom:18px;font-weight:700}
+.card .chart{position:relative;height:280px}
+
+/* GRIDS */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+@media (max-width:1100px){.grid-2,.grid-3{grid-template-columns:1fr}}
+
+/* TABELAS EXECUTIVAS */
+table{width:100%;border-collapse:collapse;font-size:14px}
+thead th{background:var(--navy);color:#fff;font-weight:700;padding:13px 14px;text-align:left;font-size:11px;letter-spacing:1.4px;text-transform:uppercase}
+thead th:not(:first-child){text-align:right}
+tbody td{padding:12px 14px;border-bottom:1px solid var(--line)}
+tbody td:not(:first-child){text-align:right;font-variant-numeric:tabular-nums}
+tbody tr:hover td{background:#FFFBE7}
+.row-receita td{background:#E8F5E9}
+.row-cost td{color:var(--red)}
+.row-total td{background:var(--gold)!important;color:#fff;font-weight:700;font-size:15px}
+.row-final td{background:var(--green)!important;color:#fff;font-weight:800;font-size:16px}
+.row-final-red td{background:var(--red)!important;color:#fff;font-weight:800;font-size:16px}
+
+/* PILL */
+.pill{display:inline-block;padding:4px 11px;border-radius:99px;font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase}
+.pill.green{background:#D1F2D5;color:var(--green)}
+.pill.red{background:#FFCDD2;color:var(--red)}
+.pill.gold{background:#FFF1C9;color:var(--gold2)}
+.pill.navy{background:#D7DEEC;color:var(--navy)}
+
+/* CENÁRIOS COMPARATIVOS */
+.scenarios{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:8px}
+@media (max-width:1100px){.scenarios{grid-template-columns:1fr}}
+.scen{background:#fff;border-radius:16px;border:2px solid var(--line);overflow:hidden;box-shadow:0 4px 16px -8px rgba(11,37,69,.1)}
+.scen .hd{padding:24px 28px;color:#fff;position:relative;overflow:hidden}
+.scen.formal .hd{background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%)}
+.scen.simpl .hd{background:linear-gradient(135deg,var(--gold2) 0%,var(--gold) 100%)}
+.scen .hd .lbl{font-size:11px;letter-spacing:2.4px;text-transform:uppercase;opacity:.85;margin-bottom:6px;font-weight:700}
+.scen .hd h4{font-size:26px;font-weight:800;letter-spacing:-0.3px;margin-bottom:6px}
+.scen .hd p{font-size:13px;opacity:.92;line-height:1.4}
+.scen .body{padding:24px 28px}
+.scen .body table td{padding:10px 0;border-bottom:1px solid var(--line);font-size:13px}
+.scen .body table td:not(:first-child){text-align:right}
+.scen .totalbar{padding:18px 22px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;margin-top:18px;font-weight:700}
+.scen.formal .totalbar{background:#E3F2FD;color:var(--navy)}
+.scen.simpl .totalbar{background:#FFF8E1;color:var(--gold2)}
+.scen .totalbar .lbl-tb{font-size:13px}
+.scen .totalbar .v{font-size:24px;font-weight:800}
+.scen .stats{display:flex;gap:22px;margin-top:14px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.scen .stats b{color:var(--text);display:block;font-size:14px}
+
+/* CRESCIMENTO STEPS */
+.growth{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:8px}
+@media (max-width:980px){.growth{grid-template-columns:1fr}}
+.growth-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:24px;position:relative;overflow:hidden}
+.growth-card::after{content:'';position:absolute;top:0;left:0;width:6px;height:100%}
+.growth-card.eco::after{background:var(--green)}
+.growth-card.med::after{background:var(--gold)}
+.growth-card.full::after{background:var(--navy)}
+.growth-card .lbl{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:8px}
+.growth-card h5{font-size:22px;font-weight:800;color:var(--navy);margin-bottom:6px}
+.growth-card .sub{font-size:13px;color:var(--muted);margin-bottom:18px}
+.growth-card dl{display:grid;grid-template-columns:auto 1fr;gap:8px 14px;font-size:13px}
+.growth-card dt{color:var(--muted)}
+.growth-card dd{font-weight:700;text-align:right;color:var(--text)}
+
+/* LINHAS DE PROCESSADOR */
+.linhas{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+@media (max-width:980px){.linhas{grid-template-columns:1fr}}
+.linha{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 4px 14px -8px rgba(11,37,69,.08)}
+.linha .hd{padding:22px 24px;color:#fff;font-weight:800}
+.linha.eco .hd{background:linear-gradient(135deg,#5C6BC0,#3949AB)}
+.linha.inter .hd{background:linear-gradient(135deg,#1565C0,#0D47A1)}
+.linha.prem .hd{background:linear-gradient(135deg,var(--gold2),#7B5E2D)}
+.linha .hd .cat{font-size:10px;text-transform:uppercase;letter-spacing:2px;opacity:.85;margin-bottom:6px;font-weight:700}
+.linha .hd h4{font-size:26px;font-weight:800;letter-spacing:-0.3px}
+.linha .hd .sub{font-size:13px;font-weight:500;opacity:.9;margin-top:5px}
+.linha .body{padding:22px 24px}
+.linha .body dl{display:grid;grid-template-columns:auto 1fr;gap:9px 14px;font-size:13px;margin-bottom:14px}
+.linha .body dt{color:var(--muted);font-weight:500}
+.linha .body dd{font-weight:700;text-align:right;color:var(--text)}
+.linha .body .who{font-size:12px;color:var(--muted);padding-top:14px;border-top:1px dashed var(--line);line-height:1.5}
+.linha .body .who b{color:var(--navy)}
+
+/* INFO BOXES */
+.info-box{background:#E3F2FD;border-left:4px solid var(--navy);padding:18px 24px;border-radius:8px;margin-bottom:20px}
+.info-box h4{color:var(--navy);font-size:15px;font-weight:800;margin-bottom:6px}
+.info-box p{font-size:13px;color:#0D47A1}
+.success-box{background:#E8F5E9;border-left:4px solid var(--green);padding:18px 24px;border-radius:8px;margin-bottom:20px}
+.success-box h4{color:var(--green);font-size:15px;font-weight:800;margin-bottom:6px}
+.success-box p{font-size:13px;color:#1B5E20}
+
+/* CELL REFERENCE */
+.cell-ref{display:inline-block;background:var(--navy);color:var(--gold);padding:3px 10px;border-radius:5px;font-family:'SF Mono',Monaco,monospace;font-size:12px;font-weight:700}
+
+footer{text-align:center;color:var(--muted);font-size:12px;margin:40px 0 8px;padding-top:24px;border-top:1px solid var(--line)}
+footer b{color:var(--navy)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-content">
+    <div class="brand">
+      <div class="logo">C</div>
+      <div class="name">Cubo LED<b>Dashboard Executivo</b></div>
+    </div>
+    <h1>Operação Importação · Revenda · Crescimento</h1>
+    <p class="sub">Painel financeiro completo da operação CUBO LED. Operação atual enxuta com sócios executando direto, clientes já conectados, sem CAC. Cenários comparativos e projeção de crescimento até 20 kits/ano.</p>
+    <div class="meta">
+      <div><span>Operação Atual</span><b>5 kits · 60 m²</b></div>
+      <div><span>Estado</span><b>Ceará (CE)</b></div>
+      <div><span>Câmbio</span><b>CNY R$0,85 / USD R$5,40</b></div>
+      <div><span>Preço /m²</span><b>R$ 11.000</b></div>
+      <div><span>Versão</span><b>v4.0 · 09/05/2026</b></div>
+    </div>
+  </div>
+</div>
+
+<!-- KPIs PRINCIPAIS -->
+<section>
+  <div class="kpi-grid">
+    <div class="kpi navy">
+      <div class="tag">Investimento Total</div>
+      <div class="num">R$ 361.770</div>
+      <div class="desc">Importação + ativos + capital de giro</div>
+    </div>
+    <div class="kpi green">
+      <div class="tag">Receita Bruta</div>
+      <div class="num">R$ 660.000</div>
+      <div class="desc">5 kits × 60 m² × R$ 11 mil/m²</div>
+    </div>
+    <div class="kpi green">
+      <div class="tag">Lucro Líquido (Formal)</div>
+      <div class="num">R$ 80.667</div>
+      <div class="desc">Margem 12,2% · com nota fiscal</div>
+    </div>
+    <div class="kpi gold">
+      <div class="tag">Lucro Líquido (Simplif.)</div>
+      <div class="num">R$ 299.191</div>
+      <div class="desc">Margem 45,3% · cenário comparativo</div>
+    </div>
+  </div>
+
+  <div class="kpi-grid" style="margin-top:18px">
+    <div class="kpi navy">
+      <div class="tag">Custo Brasil / m²</div>
+      <div class="num">R$ 5.413</div>
+      <div class="desc">Após nacionalização completa</div>
+    </div>
+    <div class="kpi navy">
+      <div class="tag">Custo Kit 4x2 / 6x3</div>
+      <div class="num">47k / 91k</div>
+      <div class="desc">R$ por kit nacionalizado</div>
+    </div>
+    <div class="kpi gold">
+      <div class="tag">ROI · Payback (Formal)</div>
+      <div class="num">22% · 9 meses</div>
+      <div class="desc">Sobre investimento total</div>
+    </div>
+    <div class="kpi gold">
+      <div class="tag">Markup Médio</div>
+      <div class="num">2,03×</div>
+      <div class="desc">Preço / Custo Brasil</div>
+    </div>
+  </div>
+
+  <div class="success-box" style="margin-top:18px">
+    <h4>✓ Operação atual gera lucro líquido positivo a R$ 11.000/m²</h4>
+    <p>Com sócios operando direto (sem equipe contratada, sem aluguel, sem marketing pago), a operação produz <b>R$ 80.667 de lucro líquido sobre 5 kits</b> no cenário formal completo. Os clientes já estão conectados e o ciclo médio de venda é de 2 meses — ROI de 22% e payback de 9 meses sobre o investimento total.</p>
+  </div>
+</section>
+
+<!-- 1. CENÁRIO FORMAL vs SIMPLIFICADO -->
+<section>
+  <div class="sec-head">
+    <div class="num">1</div>
+    <div><h2>Cenário Formal × Cenário Simplificado</h2><p>Mesma operação · 5 kits a R$ 11.000/m² · diferença é o regime de tributos sobre venda</p></div>
+  </div>
+
+  <div class="scenarios">
+    <div class="scen formal">
+      <div class="hd">
+        <div class="lbl">Cenário 1 · Formal</div>
+        <h4>Venda com Nota Fiscal</h4>
+        <p>Operação completa com ICMS 20%, PIS 1,65% e COFINS 7,6% sobre receita</p>
+      </div>
+      <div class="body">
+        <table>
+          <tbody>
+            <tr><td>Receita Bruta</td><td><b>R$ 660.000</b></td></tr>
+            <tr style="color:var(--red)"><td>(–) ICMS s/ Venda (20%)</td><td>(R$ 132.000)</td></tr>
+            <tr style="color:var(--red)"><td>(–) PIS + COFINS (9,25%)</td><td>(R$ 61.050)</td></tr>
+            <tr style="color:var(--red)"><td>(–) Custo Brasil (CMV)</td><td>(R$ 324.809)</td></tr>
+            <tr><td><b>Lucro Bruto</b></td><td><b>R$ 142.141</b> · 21,5%</td></tr>
+            <tr style="color:var(--red)"><td>(–) Comissão 5%</td><td>(R$ 33.000)</td></tr>
+            <tr style="color:var(--red)"><td>(–) OPEX 2 meses</td><td>(R$ 3.000)</td></tr>
+            <tr style="color:var(--red)"><td>(–) IRPJ + CSLL (24%)</td><td>(R$ 25.474)</td></tr>
+          </tbody>
+        </table>
+        <div class="totalbar">
+          <span class="lbl-tb">⇒ LUCRO LÍQUIDO</span>
+          <span class="v">R$ 80.667</span>
+        </div>
+        <div class="stats">
+          <span>Margem<br><b style="color:var(--green)">12,2%</b></span>
+          <span>ROI<br><b style="color:var(--green)">22,3%</b></span>
+          <span>Payback<br><b style="color:var(--green)">9,0 meses</b></span>
+          <span>Lucro/kit<br><b style="color:var(--green)">R$ 16.133</b></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="scen simpl">
+      <div class="hd">
+        <div class="lbl">Cenário 2 · Simplificado</div>
+        <h4>Venda Simplificada</h4>
+        <p>Sem incidência dos tributos sobre receita · margem comparativa</p>
+      </div>
+      <div class="body">
+        <table>
+          <tbody>
+            <tr><td>Receita</td><td><b>R$ 660.000</b></td></tr>
+            <tr style="color:var(--red)"><td>(–) Custo Brasil (CMV)</td><td>(R$ 324.809)</td></tr>
+            <tr><td><b>Lucro Bruto</b></td><td><b>R$ 335.191</b> · 50,8%</td></tr>
+            <tr style="color:var(--red)"><td>(–) Comissão 5%</td><td>(R$ 33.000)</td></tr>
+            <tr style="color:var(--red)"><td>(–) OPEX 2 meses</td><td>(R$ 3.000)</td></tr>
+          </tbody>
+        </table>
+        <div class="totalbar">
+          <span class="lbl-tb">⇒ LUCRO LÍQUIDO</span>
+          <span class="v">R$ 299.191</span>
+        </div>
+        <div class="stats">
+          <span>Margem<br><b style="color:var(--gold2)">45,3%</b></span>
+          <span>ROI<br><b style="color:var(--gold2)">82,7%</b></span>
+          <span>Payback<br><b style="color:var(--gold2)">2,4 meses</b></span>
+          <span>Lucro/kit<br><b style="color:var(--gold2)">R$ 59.838</b></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-box" style="margin-top:18px">
+    <h4>Diferença entre os cenários: R$ 218.524</h4>
+    <p>Mesma receita, mesmo CMV, mesma comissão. A diferença é apenas a carga de tributos sobre venda (ICMS 20% + PIS 1,65% + COFINS 7,6% + IRPJ/CSLL 24% sobre lucro). O cenário simplificado é apresentado para fins de análise comparativa de margem e velocidade de retorno.</p>
+  </div>
+
+  <div class="card" style="margin-top:18px">
+    <h3>Visualização — Lucro Líquido por Cenário</h3>
+    <div class="chart" style="height:240px"><canvas id="cScen"></canvas></div>
+  </div>
+</section>
+
+<!-- 2. ESTRUTURA DA OPERAÇÃO ATUAL -->
+<section>
+  <div class="sec-head">
+    <div class="num">2</div>
+    <div><h2>Operação Atual Enxuta</h2><p>Composição do investimento e custos fixos · sócios executam direto</p></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>Investimento Inicial — Detalhamento</h3>
+      <table>
+        <thead><tr><th>Categoria</th><th>R$</th><th>%</th></tr></thead>
+        <tbody>
+          <tr><td><b>Operação Principal</b><br><span class="pill navy">Produto vendável</span></td><td>R$ 324.809</td><td>89,8%</td></tr>
+          <tr><td><b>Ativos Operacionais</b><br><span class="pill gold">Backup técnico</span></td><td>R$ 32.461</td><td>9,0%</td></tr>
+          <tr><td><b>Capital de Giro</b><br><span class="pill navy">3 meses OPEX</span></td><td>R$ 4.500</td><td>1,2%</td></tr>
+          <tr class="row-total"><td>INVESTIMENTO TOTAL</td><td>R$ 361.770</td><td>100%</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>OPEX Mensal — Operação Atual</h3>
+      <table>
+        <thead><tr><th>Despesa</th><th>R$/mês</th></tr></thead>
+        <tbody>
+          <tr><td>Contabilidade essencial</td><td>R$ 600</td></tr>
+          <tr><td>Telefone + Internet</td><td>R$ 200</td></tr>
+          <tr><td>Combustível</td><td>R$ 400</td></tr>
+          <tr><td>Reserva técnica</td><td>R$ 300</td></tr>
+          <tr class="row-total"><td>TOTAL OPEX MENSAL</td><td>R$ 1.500</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:14px;padding:14px 16px;background:#E8F5E9;border-radius:8px;font-size:13px;color:#1B5E20">
+        <b>Sem equipe · sem marketing pago · sem aluguel.</b> Estrutura mínima viável — sócios operam direto e clientes já estão conectados.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3. CRESCIMENTO 10/15/20 KITS -->
+<section>
+  <div class="sec-head">
+    <div class="num">3</div>
+    <div><h2>Crescimento Futuro — Cenários de Escala</h2><p>10 · 15 · 20 kits/ano com estrutura completa</p></div>
+  </div>
+
+  <div class="growth">
+    <div class="growth-card eco">
+      <div class="lbl">Cenário Crescimento 1</div>
+      <h5>10 kits · Ano 2</h5>
+      <p class="sub">Duplicação de capacidade · estrutura inicial</p>
+      <dl>
+        <dt>Volume</dt><dd>10 kits / 120 m²</dd>
+        <dt>Receita</dt><dd>R$ 1.320.000</dd>
+        <dt>OPEX/mês</dt><dd>R$ 23.000</dd>
+        <dt>Lucro Líquido*</dt><dd style="color:var(--red)">(R$ 57.718)</dd>
+        <dt>Margem</dt><dd>−4,4%</dd>
+      </dl>
+    </div>
+
+    <div class="growth-card med">
+      <div class="lbl">Cenário Crescimento 2</div>
+      <h5>15 kits · Ano 3</h5>
+      <p class="sub">Escala consolidada · estrutura paga</p>
+      <dl>
+        <dt>Volume</dt><dd>15 kits / 180 m²</dd>
+        <dt>Receita</dt><dd>R$ 1.980.000</dd>
+        <dt>OPEX/mês</dt><dd>R$ 26.450</dd>
+        <dt>Lucro Líquido</dt><dd style="color:var(--green)">R$ 248.842</dd>
+        <dt>Margem</dt><dd>12,6%</dd>
+      </dl>
+    </div>
+
+    <div class="growth-card full">
+      <div class="lbl">Cenário Crescimento 3</div>
+      <h5>20 kits · Ano 4-5</h5>
+      <p class="sub">Operação madura · economia de escala</p>
+      <dl>
+        <dt>Volume</dt><dd>20 kits / 240 m²</dd>
+        <dt>Receita</dt><dd>R$ 2.640.000</dd>
+        <dt>OPEX/mês</dt><dd>R$ 30.418</dd>
+        <dt>Lucro Líquido</dt><dd style="color:var(--green)">R$ 331.789</dd>
+        <dt>Margem</dt><dd>12,6%</dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:24px">
+    <h3>Estrutura Adicional do Cenário de Crescimento (a partir do Ano 2)</h3>
+    <table>
+      <thead><tr><th>Estrutura adicional</th><th>R$/mês</th><th>Função</th></tr></thead>
+      <tbody>
+        <tr><td>Aluguel galpão técnico</td><td>R$ 6.000</td><td>Estoque + montagem</td></tr>
+        <tr><td>Salário técnico (CLT)</td><td>R$ 4.500</td><td>Suporte + entregas</td></tr>
+        <tr><td>Salário comercial / SDR</td><td>R$ 3.500</td><td>Prospecção + vendas</td></tr>
+        <tr><td>Tráfego pago (Meta/Google)</td><td>R$ 3.000</td><td>Aquisição</td></tr>
+        <tr><td>Marketing Instagram + conteúdo</td><td>R$ 2.000</td><td>Branding</td></tr>
+        <tr><td>Suporte técnico</td><td>R$ 1.500</td><td>Pós-venda</td></tr>
+        <tr><td>Custos administrativos</td><td>R$ 2.500</td><td>Contabilidade ampliada + jurídico</td></tr>
+        <tr class="row-total"><td>OPEX FUTURO MENSAL</td><td>R$ 23.000</td><td>+15% ao ano</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 4. PROJEÇÃO 5 ANOS -->
+<section>
+  <div class="sec-head">
+    <div class="num">4</div>
+    <div><h2>Projeção 5 Anos</h2><p>Receita · Lucro Líquido · Caixa Acumulado</p></div>
+  </div>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr><th>Linha</th><th>Ano 1</th><th>Ano 2</th><th>Ano 3</th><th>Ano 4</th><th>Ano 5</th><th>Total 5 anos</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Volume (kits)</td><td>5</td><td>10</td><td>15</td><td>20</td><td>20</td><td>70 kits</td></tr>
+        <tr><td>m² total</td><td>60</td><td>120</td><td>180</td><td>240</td><td>240</td><td>840 m²</td></tr>
+        <tr class="row-receita"><td><b>Receita Bruta</b></td><td><b>R$ 660.000</b></td><td><b>R$ 1.320.000</b></td><td><b>R$ 1.980.000</b></td><td><b>R$ 2.640.000</b></td><td><b>R$ 2.640.000</b></td><td><b>R$ 9.240.000</b></td></tr>
+        <tr><td>OPEX anual</td><td>R$ 18.000</td><td>R$ 276.000</td><td>R$ 317.400</td><td>R$ 365.010</td><td>R$ 419.762</td><td>R$ 1.396.172</td></tr>
+        <tr><td>CMV (importações)</td><td>R$ 324.809</td><td>R$ 649.618</td><td>R$ 974.427</td><td>R$ 1.299.236</td><td>R$ 1.299.236</td><td>R$ 4.547.326</td></tr>
+        <tr class="row-final"><td>⇒ LUCRO LÍQUIDO ANUAL</td><td>R$ 69.267</td><td>(R$ 57.718)</td><td>R$ 248.842</td><td>R$ 331.789</td><td>R$ 331.789</td><td>R$ 923.969</td></tr>
+        <tr><td>Margem Líquida</td><td>10,5%</td><td>−4,4%</td><td>12,6%</td><td>12,6%</td><td>12,6%</td><td>10,0%</td></tr>
+        <tr class="row-total"><td>Caixa Acumulado</td><td>R$ 69.267</td><td>R$ 11.549</td><td>R$ 260.391</td><td>R$ 592.180</td><td>R$ 923.969</td><td>—</td></tr>
+      </tbody>
+    </table>
+    <div style="margin-top:14px;padding:14px 16px;background:#FFF3E0;border-radius:8px;font-size:13px;color:#5D4037">
+      <b>Ano 2 é o ano de transição:</b> a estrutura completa entra em operação (R$ 23k/mês de OPEX) mas o volume ainda não diluiu suficientemente os custos fixos. O ponto de viragem é o Ano 3 (15 kits) — quando o lucro retorna a +12,6% de margem e o caixa acumulado dispara.
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-top:18px">
+    <div class="card">
+      <h3>Receita × Lucro Líquido — 5 Anos</h3>
+      <div class="chart" style="height:300px"><canvas id="cProj"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Caixa Acumulado vs Investimento</h3>
+      <div class="chart" style="height:300px"><canvas id="cCaixa"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- 5. LINHAS DE PRODUTO -->
+<section>
+  <div class="sec-head">
+    <div class="num">5</div>
+    <div><h2>Linhas de Produto Comerciais</h2><p>3 níveis de processador · cliente escolhe o que se encaixa</p></div>
+  </div>
+
+  <div class="linhas">
+    <div class="linha eco">
+      <div class="hd">
+        <div class="cat">Linha Econômica</div>
+        <h4>VX4S</h4>
+        <div class="sub">Entrada de mercado · custo otimizado</div>
+      </div>
+      <div class="body">
+        <dl>
+          <dt>Capacidade</dt><dd>1,3 M pixels</dd>
+          <dt>Saídas</dt><dd>1× DVI / 1× HDMI</dd>
+          <dt>Resolução máx.</dt><dd>2304×1152</dd>
+          <dt>HDR</dt><dd>Não</dd>
+        </dl>
+        <div class="who">
+          <b>Cliente ideal:</b> sports bar local, condomínio pequeno. Acesso à marca CUBO LED por menor preço.
+        </div>
+      </div>
+    </div>
+
+    <div class="linha inter">
+      <div class="hd">
+        <div class="cat">Linha Intermediária</div>
+        <h4>VX6S / VX600 Pro</h4>
+        <div class="sub">Padrão profissional · melhor custo-benefício</div>
+      </div>
+      <div class="body">
+        <dl>
+          <dt>Capacidade</dt><dd>2,3 / 6,5 M pixels</dd>
+          <dt>Saídas</dt><dd>2 / 6× Gigabit</dd>
+          <dt>Resolução máx.</dt><dd>até 3840×2160</dd>
+          <dt>HDR</dt><dd>Sim (VX600 Pro)</dd>
+        </dl>
+        <div class="who">
+          <b>Cliente ideal:</b> hotéis, condomínios premium, eventos médios. Padrão CUBO para o kit 4x2m.
+        </div>
+      </div>
+    </div>
+
+    <div class="linha prem">
+      <div class="hd">
+        <div class="cat">Linha Premium</div>
+        <h4>VX1000 Pro</h4>
+        <div class="sub">Top de linha · referência visual</div>
+      </div>
+      <div class="body">
+        <dl>
+          <dt>Capacidade</dt><dd>10,4 M pixels</dd>
+          <dt>Saídas</dt><dd>10× Gigabit</dd>
+          <dt>Resolução máx.</dt><dd>8K × 8K</dd>
+          <dt>HDR</dt><dd>HDR10 / HLG</dd>
+        </dl>
+        <div class="who">
+          <b>Cliente ideal:</b> beach club, alto padrão, kit 6x3m premium. O top do mercado.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6. COMO EDITAR -->
+<section>
+  <div class="sec-head">
+    <div class="num">6</div>
+    <div><h2>Como Editar o Dashboard</h2><p>Tudo é controlado pela aba Premissas — fluxo de atualização explicado</p></div>
+  </div>
+
+  <div class="info-box">
+    <h4>📂 Os 3 arquivos do projeto</h4>
+    <p style="line-height:1.6"><b>1. CUBO_LED_Sistema_Financeiro.xlsx</b> — Planilha mestre. É a base de dados com 14 abas. <b>2. Aba "1.Premissas"</b> dentro do Excel — única aba onde você edita valores. Todas as outras abas recalculam sozinhas. <b>3. CUBO_LED_Dashboard.html</b> — fotografia visual do estado atual. Para atualizar com novos números, peça uma nova versão.</p>
+  </div>
+
+  <div class="card">
+    <h3>Mapa das Células Principais — Aba "1.Premissas"</h3>
+    <table>
+      <thead><tr><th>O que controla</th><th>Bloco</th><th>Célula</th><th>Como editar</th></tr></thead>
+      <tbody>
+        <tr><td><b>Câmbio CNY → BRL</b></td><td>1) Câmbio</td><td><span class="cell-ref">C5</span></td><td>Sua cotação atual</td></tr>
+        <tr><td><b>Câmbio USD → BRL</b></td><td>1) Câmbio</td><td><span class="cell-ref">C6</span></td><td>Para frete e seguro</td></tr>
+        <tr style="background:#FFF8E1"><td><b>★ Quantidade Kit 4x2m</b></td><td>2) Volume</td><td><span class="cell-ref">C18</span></td><td>Quantos kits 4x2 importar</td></tr>
+        <tr style="background:#FFF8E1"><td><b>★ Quantidade Kit 6x3m</b></td><td>2) Volume</td><td><span class="cell-ref">C19</span></td><td>Quantos kits 6x3 importar</td></tr>
+        <tr style="background:#E8F5E9"><td><b>★ Preço de venda /m²</b></td><td>3) Preço</td><td><span class="cell-ref">C24</span></td><td>R$ 11.000 atual</td></tr>
+        <tr><td>Desconto à vista</td><td>3) Preço</td><td><span class="cell-ref">C25</span></td><td>5% padrão</td></tr>
+        <tr><td>Comissão comercial</td><td>3) Preço</td><td><span class="cell-ref">C27</span></td><td>5% — sócio = 0</td></tr>
+        <tr><td>II — Imp. Importação</td><td>4) Imp. Imp.</td><td><span class="cell-ref">C33</span></td><td>16% NCM 8528.59</td></tr>
+        <tr><td>PIS / COFINS Importação</td><td>4) Imp. Imp.</td><td><span class="cell-ref">C35:C36</span></td><td>2,1% / 9,65%</td></tr>
+        <tr style="background:#FFEBEE"><td><b>★ ICMS Importação</b></td><td>4) Imp. Imp.</td><td><span class="cell-ref">C37</span></td><td>20% atual</td></tr>
+        <tr><td>AFRMM</td><td>4) Imp. Imp.</td><td><span class="cell-ref">C38</span></td><td>8% s/ frete</td></tr>
+        <tr><td>Despachante</td><td>4) Imp. Imp.</td><td><span class="cell-ref">C40</span></td><td>1,5% honorários</td></tr>
+        <tr><td>Seguro internacional</td><td>4) Imp. Imp.</td><td><span class="cell-ref">C43</span></td><td>0,5% all-risks</td></tr>
+        <tr style="background:#FFF8E1"><td><b>★ Frete marítimo (US$)</b></td><td>5) Logística</td><td><span class="cell-ref">C47</span></td><td>Cotação do agente</td></tr>
+        <tr><td>Frete rodoviário</td><td>5) Logística</td><td><span class="cell-ref">C48</span></td><td>Carreta dedicada</td></tr>
+        <tr style="background:#FFEBEE"><td><b>★ ICMS sobre Venda</b></td><td>6) Tributos Venda</td><td><span class="cell-ref">C52</span></td><td>20% atual CE</td></tr>
+        <tr><td>PIS / COFINS Venda</td><td>6) Tributos Venda</td><td><span class="cell-ref">C53:C54</span></td><td>1,65% / 7,6%</td></tr>
+        <tr><td>IRPJ + CSLL</td><td>6) Tributos Venda</td><td><span class="cell-ref">C55</span></td><td>24% sobre lucro</td></tr>
+        <tr style="background:#E8F5E9"><td><b>OPEX Atual — Contabilidade</b></td><td>7) OPEX Atual</td><td><span class="cell-ref">C59</span></td><td>R$ 600/mês</td></tr>
+        <tr style="background:#E8F5E9"><td><b>OPEX Atual — Telefone/Internet</b></td><td>7) OPEX Atual</td><td><span class="cell-ref">C60</span></td><td>R$ 200/mês</td></tr>
+        <tr style="background:#E8F5E9"><td><b>OPEX Atual — Combustível</b></td><td>7) OPEX Atual</td><td><span class="cell-ref">C61</span></td><td>R$ 400/mês</td></tr>
+        <tr style="background:#FFF8E1"><td><b>★ Aluguel galpão (futuro)</b></td><td>8) OPEX Crescimento</td><td><span class="cell-ref">C67</span></td><td>R$ 6.000/mês — Ano 2+</td></tr>
+        <tr style="background:#FFF8E1"><td><b>★ Salário técnico</b></td><td>8) OPEX Crescimento</td><td><span class="cell-ref">C68</span></td><td>R$ 4.500/mês CLT</td></tr>
+        <tr style="background:#FFF8E1"><td><b>★ Salário comercial / SDR</b></td><td>8) OPEX Crescimento</td><td><span class="cell-ref">C69</span></td><td>R$ 3.500/mês</td></tr>
+        <tr style="background:#FFF8E1"><td><b>★ Tráfego pago</b></td><td>8) OPEX Crescimento</td><td><span class="cell-ref">C70</span></td><td>R$ 3.000/mês</td></tr>
+        <tr style="background:#FFF8E1"><td><b>★ Marketing Instagram</b></td><td>8) OPEX Crescimento</td><td><span class="cell-ref">C71</span></td><td>R$ 2.000/mês</td></tr>
+        <tr><td>Suporte técnico</td><td>8) OPEX Crescimento</td><td><span class="cell-ref">C72</span></td><td>R$ 1.500/mês</td></tr>
+        <tr><td>Custos administrativos</td><td>8) OPEX Crescimento</td><td><span class="cell-ref">C73</span></td><td>R$ 2.500/mês</td></tr>
+        <tr><td>Crescimento receita Ano 2</td><td>9) Crescimento</td><td><span class="cell-ref">C78</span></td><td>1,40× = +40%</td></tr>
+        <tr><td>Crescimento receita Ano 3</td><td>9) Crescimento</td><td><span class="cell-ref">C79</span></td><td>1,50× = +50%</td></tr>
+        <tr><td>Crescimento OPEX médio</td><td>9) Crescimento</td><td><span class="cell-ref">C82</span></td><td>1,15× = +15%/ano</td></tr>
+        <tr style="background:#E8F5E9"><td><b>★★ Cenário OPEX ativo</b></td><td>10) Switches</td><td><span class="cell-ref">C86</span></td><td>"A" Atual / "B" Futuro</td></tr>
+        <tr><td>Tempo p/ vender 5 kits</td><td>10) Switches</td><td><span class="cell-ref">C89</span></td><td>2 meses</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid-2" style="margin-top:18px">
+    <div class="card">
+      <h3>Fluxo de Atualização — Passo a Passo</h3>
+      <ol style="padding-left:22px;font-size:13.5px;line-height:1.8">
+        <li><b>Abrir</b> CUBO_LED_Sistema_Financeiro.xlsx no Excel ou Google Sheets.</li>
+        <li><b>Ir na aba "1.Premissas"</b> (a primeira aba editável).</li>
+        <li><b>Mudar valores</b> nas células marcadas em AZUL+AMARELO (são as únicas editáveis).</li>
+        <li><b>Salvar</b> (Ctrl+S). Todas as outras abas recalculam automaticamente.</li>
+        <li><b>Conferir</b> os novos números nas abas 4 (Importação), 7-8 (Precificação), 9 (Projeção) e 10 (ROI).</li>
+        <li><b>Para atualizar o HTML:</b> solicite uma nova versão. O HTML é uma fotografia do estado atual da planilha.</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h3>Onde os Resultados Aparecem (não editar)</h3>
+      <table style="font-size:13px">
+        <thead><tr><th>Resultado</th><th>Aba</th><th>Célula</th></tr></thead>
+        <tbody>
+          <tr><td>Custo Brasil total</td><td>4.Importação</td><td><span class="cell-ref">C43</span></td></tr>
+          <tr><td>Custo Brasil /m²</td><td>4.Importação</td><td><span class="cell-ref">C53</span></td></tr>
+          <tr><td>Custo Kit 4x2 / 6x3</td><td>4.Importação</td><td><span class="cell-ref">C54 / C55</span></td></tr>
+          <tr><td>Lucro Formal</td><td>7.Precificação-Formal</td><td><span class="cell-ref">C20</span></td></tr>
+          <tr><td>Lucro Simplificado</td><td>8.Precificação-Simpl</td><td><span class="cell-ref">C15</span></td></tr>
+          <tr><td>Comparativo F × S</td><td>8.Precificação-Simpl</td><td><span class="cell-ref">C19:F21</span></td></tr>
+          <tr><td>Lucro 5 anos</td><td>9.Projeção-5Anos</td><td><span class="cell-ref">C23:G23</span></td></tr>
+          <tr><td>Caixa Acumulado</td><td>9.Projeção-5Anos</td><td><span class="cell-ref">C25:G25</span></td></tr>
+          <tr><td>ROI / Payback</td><td>10.ROI-Payback</td><td><span class="cell-ref">C15 / C16</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="info-box" style="margin-top:18px">
+    <h4>💡 Dicas Importantes</h4>
+    <p style="line-height:1.7"><b>•</b> Faça uma cópia antes de mexer · <b>•</b> Não digite "R$" — só o número, o formato é automático · <b>•</b> Se aparecer #REF! ou #VALUE!, foi referência apagada — desfaça (Ctrl+Z) · <b>•</b> Cores das células: <span style="background:#FFFACD;border:1px solid #ccc;padding:1px 6px;color:#0000FF;font-weight:700;font-size:11px">azul/amarelo</span> = editável · preto = fórmula · <span style="color:#008000;font-weight:700">verde</span> = link entre abas · <span style="background:#C8A664;color:#fff;padding:1px 6px;font-weight:700;font-size:11px">dourado</span> = totais · <span style="background:#1B5E20;color:#fff;padding:1px 6px;font-weight:700;font-size:11px">verde escuro</span> = resultado-chave.</p>
+  </div>
+</section>
+
+<footer>
+  <b>CUBO LED</b> · Dashboard Executivo · v4.0 · 09/05/2026 · Modelo financeiro: <code>CUBO_LED_Sistema_Financeiro.xlsx</code> · 14 abas · 336 fórmulas auditáveis
+</footer>
+
+</div>
+
+<script>
+const palette = {
+  navy:'#0B2545', navy2:'#163A6B', gold:'#C8A664', gold2:'#9C7E3D',
+  green:'#1B5E20', green2:'#43A047', red:'#B23A48', muted:'#A8B0C2'
+};
+Chart.defaults.font.family = "-apple-system, 'Inter', 'Segoe UI', Roboto, Arial";
+Chart.defaults.color = '#16223A';
+
+// Cenários comparativos
+new Chart(document.getElementById('cScen'),{
+  type:'bar',
+  data:{
+    labels:['Receita','Lucro Bruto','Lucro Líquido','Margem (%)'],
+    datasets:[
+      {label:'Cenário Formal', data:[660000, 142141, 80667, 12.2], backgroundColor:palette.navy, borderRadius:6, yAxisID:'y'},
+      {label:'Cenário Simplificado', data:[660000, 335191, 299191, 45.3], backgroundColor:palette.gold, borderRadius:6, yAxisID:'y'}
+    ]
+  },
+  options:{
+    plugins:{legend:{position:'top'}},
+    scales:{y:{ticks:{callback:v=>'R$ '+(v/1000).toFixed(0)+'k'}}}
+  }
+});
+
+// Projeção 5 anos
+new Chart(document.getElementById('cProj'),{
+  data:{
+    labels:['Ano 1','Ano 2','Ano 3','Ano 4','Ano 5'],
+    datasets:[
+      {type:'bar', label:'Receita Bruta', data:[660000, 1320000, 1980000, 2640000, 2640000], backgroundColor:'rgba(11,37,69,.85)', borderRadius:6, yAxisID:'y'},
+      {type:'bar', label:'Lucro Líquido', data:[69267, -57718, 248842, 331789, 331789], backgroundColor:ctx=>ctx.parsed && ctx.parsed.y>=0?palette.green:palette.red, borderRadius:6, yAxisID:'y'}
+    ]
+  },
+  options:{
+    interaction:{mode:'index',intersect:false},
+    plugins:{legend:{position:'top'}},
+    scales:{y:{ticks:{callback:v=>'R$ '+(v/1000).toFixed(0)+'k'}}}
+  }
+});
+
+// Caixa acumulado
+new Chart(document.getElementById('cCaixa'),{
+  type:'line',
+  data:{
+    labels:['Ano 0','Ano 1','Ano 2','Ano 3','Ano 4','Ano 5'],
+    datasets:[
+      {label:'Caixa Acumulado', data:[-361770, 69267-361770, 11549-361770, 260391-361770, 592180-361770, 923969-361770], borderColor:palette.gold, backgroundColor:'rgba(200,166,100,.2)', tension:.3, fill:true, pointRadius:5, pointBackgroundColor:palette.gold, borderWidth:3},
+      {label:'Investimento Total (referência)', data:[-361770,-361770,-361770,-361770,-361770,-361770], borderColor:palette.red, borderDash:[5,5], pointRadius:0, fill:false}
+    ]
+  },
+  options:{
+    plugins:{legend:{position:'top'}},
+    scales:{y:{ticks:{callback:v=>'R$ '+(v/1000).toFixed(0)+'k'}}}
+  }
+});
+</script>
+</body>
+</html>
